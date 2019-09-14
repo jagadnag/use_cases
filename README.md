@@ -3,7 +3,7 @@ network_automation use cases
 
 
 ##### Script output
-
+'''
 (venv) macbook$ python ios_2900_upgrade_v3.py
 Enter Device IP address: 10.1.1.1
 Enter login username: admin
@@ -98,3 +98,4 @@ System image file is "flash0:c2951-universalk9-mz.SPA.157-3.M4b.bin"
 Device already running on latest version. No update required.
 --------------------------------------------------------------------------------
 (venv) macbook$
+'''
