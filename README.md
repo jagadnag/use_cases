@@ -1,5 +1,5 @@
 # use_cases
-network_automation use cases
+network_automation use case - Cisco IOS router upgrade
 
 
 ##### Script output
@@ -54,7 +54,7 @@ Saving config...
 
 Reloading Device...
 
-Reload scheduled in 1 minute by admin on vty0 (10.10.1.100)
+Reload scheduled in 1 minute by admin on vty0 (10.10.10.100)
 Reload reason: Reload Command
 Proceed with reload? [confirm]ISR2951-1#
 
@@ -84,8 +84,8 @@ Password:
 Source file: c2951-universalk9-mz.SPA.157-3.M4b.bin
 md5: a9a129e3245993b0bc062d262a97dc02
 ftp server ip: 10.122.153.158
-ftp_username: calo
-ftp_password: calo
+ftp_username: ftp
+ftp_password: ftp123
 >>>> 2019-09-14 19:22:31.629206
 
 Logging in to Device...
