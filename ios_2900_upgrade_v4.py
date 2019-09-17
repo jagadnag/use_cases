@@ -1,5 +1,17 @@
 #!/usr/bin/env python
-"""Script to upgrade a Cisco IOS routers."""
+"""
+Author: Jag
+email: jagadnag@gmail.com
+
+Script to upgrade a Cisco IOS routers.
+
+Requirements:
+python3 virtual env
+netmiko
+
+Status: WIP, need to add more error handling and argparse
+
+"""
 from __future__ import print_function
 from datetime import datetime
 from getpass import getpass
