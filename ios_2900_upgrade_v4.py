@@ -3,7 +3,7 @@
 Author: Jag
 email: jagadnag@gmail.com
 
-Script to upgrade Cisco IOS routers.
+Purpose: Script to upgrade Cisco IOS routers.
 
 Requirements:
 python3 virtual env
