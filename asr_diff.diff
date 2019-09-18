@@ -1,0 +1,677 @@
+  asr1#sh run
+  Building configuration...
+  
+  Current configuration : 6860 bytes
+  !
+  ! Last configuration change at 03:44:02 PST Fri Sep 13 2019 by cisco
+  !
+  version 15.5
+  service tcp-keepalives-in
+  service tcp-keepalives-out
+  service timestamps debug datetime msec
+  service timestamps log datetime msec
+  service password-encryption
+  no platform punt-keepalive disable-kernel-core
+  !
+  hostname asr1
+  !
+  boot-start-marker
+  boot system flash bootflash:/asr1000rp1-advipservicesk9.03.16.09.S.155-3.S9-ext.bin
+  boot-end-marker
+  !
+  aqm-register-fnf
+  !
+  vrf definition CHEMICAL
+   description CHEMICAL ENGINEERING FIRM
+   rd 65000:2
+   route-target export 65000:2
+   route-target import 65000:2
+  !
+  vrf definition CHEM_MGMT
+   description CHEMICAL ENGINEERING MANAGER
+   rd 65000:3
+   route-target export 65000:3
+   route-target import 65000:4
+  !
+  vrf definition Mgmt-intf
+   !
+   address-family ipv4
+   exit-address-family
+   !
+   address-family ipv6
+   exit-address-family
+  !
+  vrf definition POLICE
+   description POLICE DEPARTMENT
+   rd 65000:1
+   route-target export 65000:1
+   route-target import 65000:1
+  !
+  logging buffered 19999
+  enable secret 5 $1$0Ni7$blT/0IEYesfl8E4Y730vG1
+  !
+  aaa new-model
+  !
+  !
+  aaa authentication login default local
+  aaa authorization exec default local 
+  !
+  !
+  !
+  !
+  !
+  !
+  aaa session-id common
+  clock timezone PST -8 0
+  !
+  ip vrf Customer_A
+   rd 65000:1001
+   export map Customer_A_Export
+   route-target export 65000:1001
+   route-target import 65000:1001
+   route-target import 65000:2001
+   route-target import 65000:100
+  !
+  ip vrf Customer_A_Colo
+   rd 65000:2001
+   route-target export 65000:2001
+   route-target export 65000:101
+   route-target import 65000:2001
+   route-target import 65000:1001
+   route-target import 65000:100
+  !
+  ip vrf Customer_B
+   rd 65000:1002
+   route-target export 65000:1002
+   route-target export 65000:101
+   route-target import 65000:1002
+   route-target import 65000:2002
+   route-target import 65000:100
+  !
+  ip vrf Customer_B_Colo
+   rd 65000:2002
+   route-target export 65000:2002
+   route-target export 65000:101
+   route-target import 65000:2002
+   route-target import 65000:2001
+   route-target import 65000:100
+  !
+  ip vrf Services
+   rd 65000:100
+   route-target export 65000:100
+   route-target import 65000:100
+   route-target import 65000:101
+  !
+  ip vrf forwarding
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  
+  
+  ip name-server 8.8.8.8 8.8.4.4 1.1.1.1 192.168.1.1
+  
+- no ip domain lookup
+? ---
++ ip domain lookup
+  ip domain name sanjose.lab.com
+  ip multicast-routing distributed
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  subscriber templating
+  !
+  multilink bundle-name authenticated
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  archive
+   log config
+    logging enable
+    notify syslog contenttype plaintext
+    hidekeys
+  file prompt quiet
+  !
+  spanning-tree extend system-id
+  !
+  username cisco privilege 15 password 7 1511021F0725
+  username ansible privilege 15 password 7 110817161E100709
+  username pyats password 7 05080F1C22431F5B4A
+  !
+  redundancy
+   mode none
+  !
+  !
+  cdp run
+  !
+  !
+  ! 
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  !
+  ! 
+  ! 
+  ! 
+  ! 
+  ! 
+  ! 
+  !
+  !
+  interface Loopback0
+   ip address 1.1.1.1 255.255.255.255
+  !
++ interface Loopback1
++  ip address 1.1.1.2 255.255.255.255
++ ! 
+  interface Loopback100
+   ip vrf forwarding Services
+   ip address 192.168.0.1 255.255.255.0
+  !
+  interface Loopback1001
+   ip vrf forwarding Customer_A
+   ip address 172.16.0.1 255.255.0.0 secondary
+   ip address 10.1.1.1 255.255.255.0
+  !
+  interface Loopback1002
+   ip vrf forwarding Customer_B
+   ip address 10.1.2.1 255.255.255.0
+  !
+  interface Loopback2001
+   ip vrf forwarding Customer_A_Colo
+   ip address 10.2.1.1 255.255.255.0
+  !
+  interface Loopback2002
+   ip vrf forwarding Customer_B_Colo
+   ip address 10.2.2.1 255.255.255.0
+  !
+  interface GigabitEthernet0/1/0
+   ip address 192.168.1.1 255.255.255.0
+   no ip redirects
+   ip pim sparse-mode
+   ip ospf network point-to-point
+   load-interval 30
+   shutdown
+   negotiation auto
+   cdp enable
+   bfd interval 250 min_rx 250 multiplier 3
+  !
+  interface GigabitEthernet0/1/1
+   no ip address
+   negotiation auto
+   cdp enable
+  !
+  interface GigabitEthernet0/1/2
+   no ip address
+   negotiation auto
+   cdp enable
+  !
+  interface GigabitEthernet0/1/3
+   no ip address
+   negotiation auto
+   cdp enable
+  !
+  interface GigabitEthernet0/1/4
+   no ip address
+   negotiation auto
+   cdp enable
+  !
+  interface GigabitEthernet0/1/5
+   no ip address
+   negotiation auto
+   cdp enable
+  !
+  interface GigabitEthernet0/1/6
+   no ip address
+   negotiation auto
+   cdp enable
+  !
+  interface GigabitEthernet0/1/7
+   no ip address
+   negotiation auto
+   cdp enable
+  !
+  interface GigabitEthernet0
+   vrf forwarding Mgmt-intf
+   ip address 172.21.56.121 255.255.255.192
+   negotiation auto
+  !
+  router ospf 1
+   network 0.0.0.0 255.255.255.255 area 0
+   bfd all-interfaces
+  !
+  router bgp 100
+   bgp log-neighbor-changes
+   neighbor 192.168.1.2 remote-as 200
+   neighbor 192.168.1.2 fall-over bfd
+   !
+   address-family ipv4
+    redistribute connected
+    neighbor 192.168.1.2 activate
+   exit-address-family
+   !
+   address-family ipv4 vrf Customer_A
+    redistribute connected
+   exit-address-family
+   !
+   address-family ipv4 vrf Customer_A_Colo
+    redistribute connected
+   exit-address-family
+   !
+   address-family ipv4 vrf Customer_B
+    redistribute connected
+   exit-address-family
+   !
+   address-family ipv4 vrf Customer_B_Colo
+    redistribute connected
+   exit-address-family
+   !
+   address-family ipv4 vrf Services
+    redistribute connected
+   exit-address-family
+  !
+  ip forward-protocol nd
+  !
+  ip ftp source-interface GigabitEthernet0
+  no ip http server
+  no ip http secure-server
+  ip tftp source-interface GigabitEthernet0
+  ip pim ssm default
+  ip route vrf Mgmt-intf 0.0.0.0 0.0.0.0 172.21.56.65
+  ip ssh authentication-retries 5
+  ip ssh source-interface GigabitEthernet0
+  ip ssh version 2
+  ip scp server enable
+  !
+  !
+  ip prefix-list Customer_A_Networks seq 5 permit 10.1.1.0/24
+  ip sla responder
+  logging host 10.1.1.1
+  access-list 100 permit icmp any any
+  access-list 100 permit tcp any any eq domain
+  access-list 100 permit tcp any any eq www
+  access-list 100 permit tcp any any eq 443
+  !
+  route-map Customer_A_Export permit 10
+   match ip address prefix-list Customer_A_Networks
+   set extcommunity rt 65000:101 additive
+  !
+  snmp-server community cisco_public RO
+  snmp-server community cisco_private RW
+  snmp-server community ansible-public RO
+  snmp-server community ansible-private RW
+  snmp-server community ansible-test RO
+  snmp-server location dCloud
+  snmp-server contact Test contact
+  !
+  !
+  !
+  !
+  control-plane
+  !
+   !
+   !
+   !
+   !
+  !
+  !
+  !
+  !
+  alias exec c conf t
+  alias exec cdp sh cdp nei
+  alias exec sr sh run
+  alias exec ss sh runn | sec
+  alias exec sip sh ip int brie | ex unass
+  alias exec si sh ip
+  alias exec r4 sh ip route
+  alias exec b4 sh bgp ipv4 unicast summary
+  alias exec b6 sh bgp ipv6 unicast summary
+  alias exec v4 sh bgp vpnv4 unicast all summary
+  alias exec v6 sh bgp vpnv6 unicast all summary
+  alias exec m sh mpls
+  alias exec bb sh bgp ipv4 unicast
+  alias exec vv sh bgp vpnv4 unicast all
+  !
+  line con 0
+   exec-timeout 0 0
+   logging synchronous
+   stopbits 1
+  line aux 0
+   stopbits 1
+  line vty 0 4
+   password 7 121A0C041104
+   logging synchronous
+   login authentication local
+   transport input all
+  line vty 5 15
+   password 7 121A0C041104
+   logging synchronous
+   login authentication local
+   transport input all
+  !
+  ntp logging
+  ntp authenticate
+  ntp server 10.1.1.1
+  ntp server 192.0.2.1
+  ntp server 192.0.2.2
+  ntp server 1.2.3.4
++ ntp server 1.2.3.5
+  !
+  end
+  
+  asr1#sh ip int brie
+  Interface              IP-Address      OK? Method Status                Protocol
+  GigabitEthernet0/1/0   192.168.1.1     YES NVRAM  administratively down down    
+  GigabitEthernet0/1/1   unassigned      YES NVRAM  down                  down    
+  GigabitEthernet0/1/2   unassigned      YES NVRAM  down                  down    
+  GigabitEthernet0/1/3   unassigned      YES NVRAM  down                  down    
+  GigabitEthernet0/1/4   unassigned      YES NVRAM  down                  down    
+  GigabitEthernet0/1/5   unassigned      YES NVRAM  down                  down    
+  GigabitEthernet0/1/6   unassigned      YES NVRAM  up                    up      
+- GigabitEthernet0/1/7   unassigned      YES NVRAM  down                  down    
++ GigabitEthernet0/1/7   unassigned      YES NVRAM  up                    up    
+  GigabitEthernet0       172.21.56.121   YES NVRAM  up                    up      
+  Loopback0              1.1.1.1         YES NVRAM  up                    up      
+  Loopback100            192.168.0.1     YES NVRAM  up                    up      
+  Loopback1001           10.1.1.1        YES NVRAM  up                    up      
+  Loopback1002           10.1.2.1        YES NVRAM  up                    up      
+  Loopback2001           10.2.1.1        YES NVRAM  up                    up      
+  Loopback2002           10.2.2.1        YES NVRAM  up                    up      
+  asr1#sh cdp nei
+  Capability Codes: R - Router, T - Trans Bridge, B - Source Route Bridge
+                    S - Switch, H - Host, I - IGMP, r - Repeater, P - Phone, 
+                    D - Remote, C - CVTA, M - Two-port Mac Relay 
+  
+  Device ID        Local Intrfce     Holdtme    Capability  Platform  Port ID
+  nx-osv-1.lab.com(JAF1549AJSP)
+                   Gig 0/1/6         128             R S C  N7K-C7009 Eth 4/5
+  
+  Total cdp entries displayed : 1
+  asr1#sh ip route
+  Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+         D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area 
+         N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+         E1 - OSPF external type 1, E2 - OSPF external type 2
+         i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+         ia - IS-IS inter area, * - candidate default, U - per-user static route
+         o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+         a - application route
+         + - replicated route, % - next hop override, p - overrides from PfR
+  
+  Gateway of last resort is not set
+  
+        1.0.0.0/32 is subnetted, 1 subnets
+  C        1.1.1.1 is directly connected, Loopback0
++ C        1.1.1.2 is directly connected, Loopback1
++ 
+  asr1#sh logg
+  Syslog logging: enabled (0 messages dropped, 66 messages rate-limited, 0 flushes, 0 overruns, xml disabled, filtering disabled)
+  
+  No Active Message Discriminator.
+  
+  
+  
+  No Inactive Message Discriminator.
+  
+  
+      Console logging: level debugging, 129 messages logged, xml disabled,
+                       filtering disabled
+      Monitor logging: level debugging, 34 messages logged, xml disabled,
+                       filtering disabled
+      Buffer logging:  level debugging, 196 messages logged, xml disabled,
+                      filtering disabled
+      Exception Logging: size (4096 bytes)
+      Count and timestamp logging messages: disabled
+      Persistent logging: disabled
+  
+  No active filter modules.
+  
+      Trap logging: level informational, 194 message lines logged
+          Logging to 10.1.1.1  (udp port 514, audit disabled,
+                link up),
+                25 message lines logged, 
+                0 message lines rate-limited, 
+                0 message lines dropped-by-MD, 
+                xml disabled, sequence number disabled
+                filtering disabled
+          Logging Source-Interface:       VRF Name:
+  
+  Log Buffer (19999 bytes):
+  
+  *Sep 10 20:40:34.307: %SPANTREE-5-EXTENDED_SYSID: Extended SysId enabled for type vlan
+  *Sep 10 20:40:36.559: %VOICE_HA-7-STATUS: CUBE HA-supported platform detected.
+  *Sep 10 20:40:40.650: %LINK-3-UPDOWN: Interface Lsmpi0, changed state to up
+  *Sep 10 20:40:40.652: %LINK-3-UPDOWN: Interface EOBC0, changed state to up
+  *Sep 10 20:40:40.653: %LINEPROTO-5-UPDOWN: Line protocol on Interface VoIP-Null0, changed state to up
+  *Sep 10 20:40:40.654: %LINEPROTO-5-UPDOWN: Line protocol on Interface LI-Null0, changed state to up
+  *Sep 10 20:40:40.654: %LINK-3-UPDOWN: Interface GigabitEthernet0, changed state to down
+  *Sep 10 20:40:40.671: %LINK-3-UPDOWN: Interface LIIN0, changed state to up
+  *Sep 10 20:40:40.841: %PNP-6-PNP_DISCOVERY_STOPPED: PnP Discovery stopped (Aborted by non-PnP bootstrapping)
+  *Sep 10 20:40:40.944: %NETCLK-5-NETCLK_MODE_CHANGE: Network clock source not available. The network clock has changed to freerun
+  
+  *Sep 10 20:40:41.686: %LINEPROTO-5-UPDOWN: Line protocol on Interface Lsmpi0, changed state to up
+  *Sep 10 20:40:41.686: %LINEPROTO-5-UPDOWN: Line protocol on Interface EOBC0, changed state to up
+  *Sep 10 20:40:41.687: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0, changed state to down
+  *Sep 10 20:40:41.687: %LINEPROTO-5-UPDOWN: Line protocol on Interface LIIN0, changed state to up
+  *Sep 10 20:40:41.993: %IOSXE_MGMTVRF-6-CREATE_SUCCESS_INFO: Management vrf Mgmt-intf created with ID 1, ipv4 table-id 0x1, ipv6 table-id 0x1E000001
+  *Sep 10 20:40:46.644: %SYS-5-LOG_CONFIG_CHANGE: Buffer logging: level debugging, xml disabled, filtering disabled, size (19999)
+  *Sep 10 20:40:46.653: %SYS-6-CLOCKUPDATE: System clock has been updated from 20:40:46 UTC Tue Sep 10 2019 to 12:40:46 PST Tue Sep 10 2019, configured from console by console.
+  *Sep 10 20:40:46.758: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback0, changed state to up
+  *Sep 10 20:40:46.782: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback100, changed state to up
+  *Sep 10 20:40:46.809: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback1001, changed state to up
+  *Sep 10 20:40:46.837: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback1002, changed state to up
+  *Sep 10 20:40:46.857: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback2001, changed state to up
+  *Sep 10 20:40:46.878: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback2002, changed state to up
+  *Sep 10 20:40:46.928: %BFD-6-BFD_IF_CONFIGURE: BFD-SYSLOG: bfd config apply, idb:GigabitEthernet0/1/0 
+  *Sep 10 20:40:47.504: %SYS-6-LOGGINGHOST_STARTSTOP: Logging to host 1.1.1.1 port 0 CLI Request Triggered
+  *Sep 10 20:40:47.505: %SYS-6-LOGGINGHOST_STARTSTOP: Logging to host 2.2.2.2 port 0 CLI Request Triggered
+  *Sep 10 20:40:47.507: %SYS-6-LOGGINGHOST_STARTSTOP: Logging to host 3.3.3.3 port 0 CLI Request Triggered
+  *Sep 10 20:40:47.508: %SYS-6-LOGGINGHOST_STARTSTOP: Logging to host 1.2.3.4 port 0 CLI Request Triggered
+  *Sep 10 20:40:47.629: NTP Core (INFO): keys initilized.
+  *Sep 10 20:40:47.634: NTP Core (NOTICE): proto: precision =  usec
+  *Sep 10 20:40:47.634: NTP Core (NOTICE): ntpd  PPM
+  *Sep 10 20:40:47.634: NTP Core (NOTICE): ntpd  PPM
+  *Sep 10 20:40:47.635: NTP Core (INFO): 0.0.0.0 C01C 0C clock_step
+  *Sep 10 20:40:47.638: %SYS-5-CONFIG_I: Configured from memory by console
+  *Sep 10 20:40:47.646: %IOSXE_OIR-6-REMSPA: SPA removed from subslot 0/1, interfaces disabled
+  *Sep 10 20:40:47.675: %SPA_OIR-6-OFFLINECARD: SPA (SPA-8X1GE-V2) offline in subslot 0/1
+  *Sep 10 20:40:47.688: %IOSXE_OIR-6-INSCARD: Card (fp) inserted in slot F0
+  *Sep 10 20:40:47.688: %IOSXE_OIR-6-ONLINECARD: Card (fp) online in slot F0
+  *Sep 10 20:40:47.754: %IOSXE_OIR-6-INSCARD: Card (cc) inserted in slot 0
+  *Sep 10 20:40:47.754: %IOSXE_OIR-6-ONLINECARD: Card (cc) online in slot 0
+  *Sep 10 20:40:47.803: %IOSXE_OIR-6-INSSPA: SPA inserted in subslot 0/1
+  *Sep 10 20:40:48.100: %SYS-5-RESTART: System restarted --
+  Cisco IOS Software, ASR1000 Software (PPC_LINUX_IOSD-ADVIPSERVICESK9-M), Version 15.5(3)S9, RELEASE SOFTWARE (fc3)
+  Technical Support: http://www.cisco.com/techsupport
+  Copyright (c) 1986-2019 by Cisco Systems, Inc.
+  Compiled Mon 18-Mar-19 06:56 by mcpre
+  *Sep 10 20:40:48.228: %SSH-5-ENABLED: SSH 2.0 has been enabled
+  *Sep 10 20:40:48.330: %CRYPTO-6-GDOI_ON_OFF: GDOI is OFF
+  *Sep 10 20:40:48.330: %CRYPTO-6-ISAKMP_ON_OFF: ISAKMP is OFF
+  *Sep 10 20:40:48.775: %SYS-6-LOGGINGHOST_STARTSTOP: Logging to host 1.1.1.1 port 514 started - CLI initiated
+  *Sep 10 20:40:48.775: %SYS-6-LOGGINGHOST_STARTSTOP: Logging to host 2.2.2.2 port 514 started - CLI initiated
+  *Sep 10 20:40:48.775: %SYS-6-LOGGINGHOST_STARTSTOP: Logging to host 3.3.3.3 port 514 started - CLI initiated
+  *Sep 10 20:40:48.777: %SYS-6-LOGGINGHOST_STARTSTOP: Logging to host 1.2.3.4 port 514 started - CLI initiated
+  *Sep 10 20:40:51.675: %SNMP-5-COLDSTART: SNMP agent on host asr1 is undergoing a cold start
+  *Sep 10 20:40:52.638: %SPA_OIR-6-ONLINECARD: SPA (SPA-8X1GE-V2) online in subslot 0/1
+  *Sep 10 20:40:53.744: %SYS-6-BOOTTIME: Time taken to reboot after reload =  373 seconds
+  *Sep 10 20:40:53.794: %LINK-3-UPDOWN: Interface GigabitEthernet0/1/0, changed state to down
+  *Sep 10 20:40:54.033: %LINK-3-UPDOWN: Interface GigabitEthernet0/1/1, changed state to down
+  *Sep 10 20:40:54.042: %LINK-3-UPDOWN: Interface GigabitEthernet0/1/2, changed state to down
+  *Sep 10 20:40:54.047: %LINK-3-UPDOWN: Interface GigabitEthernet0/1/3, changed state to down
+  *Sep 10 20:40:54.052: %LINK-3-UPDOWN: Interface GigabitEthernet0/1/4, changed state to down
+  *Sep 10 20:40:54.057: %LINK-3-UPDOWN: Interface GigabitEthernet0/1/5, changed state to down
+  *Sep 10 20:40:54.063: %LINK-3-UPDOWN: Interface GigabitEthernet0/1/6, changed state to down
+  *Sep 10 20:40:54.151: %LINK-3-UPDOWN: Interface GigabitEthernet0, changed state to up
+  *Sep 10 20:40:54.524: %LINK-3-UPDOWN: Interface GigabitEthernet0/1/7, changed state to down
+  *Sep 10 20:40:55.152: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0, changed state to up
+  *Sep 10 20:40:55.465: %LINK-3-UPDOWN: SIP0/1: Interface GigabitEthernet0/1/0, changed state to down
+  *Sep 10 20:40:55.466: %LINK-3-UPDOWN: SIP0/1: Interface GigabitEthernet0/1/6, changed state to down
+  *Sep 10 20:40:58.251: %PIM-5-DRCHG: DR change from neighbor 0.0.0.0 to 192.168.1.1 on interface GigabitEthernet0/1/0
+  *Sep 10 20:41:00.026: %LINK-3-UPDOWN: Interface GigabitEthernet0/1/0, changed state to up
+  *Sep 10 20:40:59.342: %LINK-3-UPDOWN: SIP0/1: Interface GigabitEthernet0/1/0, changed state to up
+  *Sep 10 20:41:01.027: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/1/0, changed state to up
+  *Sep 10 20:41:01.220: %LINK-3-UPDOWN: Interface GigabitEthernet0/1/6, changed state to up
+  *Sep 10 20:41:01.495: %BFD-6-BFD_SESS_CREATED: BFD-SYSLOG: bfd_session_created, neigh 192.168.1.2 proc:BGP, idb:GigabitEthernet0/1/0 handle:1 act
+  *Sep 10 20:41:01.495: %BGP-5-ADJCHANGE: neighbor 192.168.1.2 Up 
+  *Sep 10 20:41:00.661: %LINK-3-UPDOWN: SIP0/1: Interface GigabitEthernet0/1/6, changed state to up
+  *Sep 10 20:41:02.220: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/1/6, changed state to up
+  *Sep 10 20:41:02.292: %BFDFSM-6-BFD_SESS_UP: BFD-SYSLOG: BFD session ld:2049 handle:1 is going UP
+  *Sep 10 20:41:10.141: %OSPF-5-ADJCHG: Process 1, Nbr 2.2.2.2 on GigabitEthernet0/1/0 from LOADING to FULL, Loading Done
+  *Sep 10 20:41:10.141: %BFD-6-BFD_SESS_CREATED: BFD-SYSLOG: bfd_session_created, neigh 192.168.1.2 proc:OSPF, idb:GigabitEthernet0/1/0 handle:1 act
+  *Sep 10 20:45:36.053: %NETCLK-5-NETCLK_MODE_CHANGE: Network clock source not available. The network clock has changed to freerun
+  
+  *Sep 12 08:28:51.851: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback11, changed state to up
+  *Sep 12 08:28:51.858: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback12, changed state to up
+  *Sep 12 08:28:51.863: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback13, changed state to up
+  *Sep 12 08:28:51.868: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback14, changed state to up
+  *Sep 12 08:28:51.873: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback15, changed state to up
+  *Sep 12 08:28:51.877: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback16, changed state to up
+  *Sep 12 08:28:51.882: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback17, changed state to up
+  *Sep 12 08:28:51.887: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback18, changed state to up
+  *Sep 12 08:28:51.890: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback19, changed state to up
+  *Sep 12 08:28:51.896: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback20, changed state to up
+  *Sep 12 08:28:51.904: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface range lo 11  - 20
+  *Sep 12 08:28:51.909: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback12 
+  *Sep 12 08:28:51.912: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback13 
+  *Sep 12 08:28:51.914: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback14 
+  *Sep 12 08:28:51.916: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback15 
+  *Sep 12 08:28:51.919: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback16 
+  *Sep 12 08:28:51.921: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback17 
+  *Sep 12 08:28:51.924: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback18 
+  *Sep 12 08:28:51.926: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback19 
+  *Sep 12 08:28:51.928: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback20 
+  *Sep 12 08:28:51.930: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback11 
+  *Sep 12 08:28:52.067: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:description Created by Netmiko
+  *Sep 12 08:28:52.069: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback12 
+  *Sep 12 08:28:52.069: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:description Created by Netmiko
+  *Sep 12 08:28:52.072: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback13 
+  *Sep 12 08:28:52.073: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:description Created by Netmiko
+  *Sep 12 08:28:52.074: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback14 
+  *Sep 12 08:28:52.075: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:description Created by Netmiko
+  *Sep 12 08:28:52.077: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback15 
+  *Sep 12 08:28:52.079: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:description Created by Netmiko
+  *Sep 12 08:28:52.081: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback16 
+  *Sep 12 08:28:52.082: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:description Created by Netmiko
+  *Sep 12 08:28:52.083: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback17 
+  *Sep 12 08:28:52.084: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:description Created by Netmiko
+  *Sep 12 08:28:52.086: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback18 
+  *Sep 12 08:28:52.087: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:description Created by Netmiko
+  *Sep 12 08:28:52.089: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback19 
+  *Sep 12 08:28:52.089: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:description Created by Netmiko
+  *Sep 12 08:28:52.091: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback20 
+  *Sep 12 08:28:52.092: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:description Created by Netmiko
+  *Sep 12 08:28:52.094: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback11 
+  *Sep 12 08:28:52.107: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:no shutdown 
+  *Sep 12 08:28:52.108: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback12 
+  *Sep 12 08:28:52.109: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:no shutdown 
+  *Sep 12 08:28:52.112: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback13 
+  *Sep 12 08:28:52.112: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:no shutdown 
+  *Sep 12 08:28:52.114: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback14 
+- *Sep 12 08:28:52.114: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:no shutdown 
+  *Sep 12 08:28:52.116: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback15 
+  *Sep 12 08:28:52.117: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:no shutdown 
+  *Sep 12 08:28:52.119: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback16 
+  *Sep 12 08:28:52.119: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:no shutdown 
+  *Sep 12 08:28:52.121: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback17 
+  *Sep 12 08:28:52.122: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:no shutdown 
+  *Sep 12 08:28:52.124: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback18 
+  *Sep 12 08:28:52.125: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:no shutdown 
+  *Sep 12 08:28:52.127: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback19 
+  *Sep 12 08:28:52.128: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:no shutdown 
+  *Sep 12 08:28:52.131: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback20 
+  *Sep 12 08:28:52.132: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:no shutdown 
+  *Sep 12 08:28:52.133: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback11 
+  *Sep 12 08:28:54.633: %SYS-5-CONFIG_I: Configured from console by cisco on vty0 (10.82.213.174)
+  *Sep 12 11:27:38.601: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:no interface range Loopback11 - 20
+  *Sep 12 11:27:40.044: %SYS-5-CONFIG_I: Configured from console by cisco on vty2 (10.82.213.174)
+  *Sep 12 11:27:40.531: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback11, changed state to down
+  *Sep 12 11:27:40.531: %LINK-5-CHANGED: Interface Loopback11, changed state to administratively down
+  *Sep 12 11:27:40.541: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback12, changed state to down
+  *Sep 12 11:27:40.541: %LINK-5-CHANGED: Interface Loopback12, changed state to administratively down
+  *Sep 12 11:27:40.546: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback13, changed state to down
+  *Sep 12 11:27:40.547: %LINK-5-CHANGED: Interface Loopback13, changed state to administratively down
+  *Sep 12 11:27:40.552: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback14, changed state to down
+  *Sep 12 11:27:40.553: %LINK-5-CHANGED: Interface Loopback14, changed state to administratively down
+  *Sep 12 11:27:40.559: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback15, changed state to down
+  *Sep 12 11:27:40.559: %LINK-5-CHANGED: Interface Loopback15, changed state to administratively down
+  *Sep 12 11:27:40.567: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback16, changed state to down
+  *Sep 12 11:27:40.567: %LINK-5-CHANGED: Interface Loopback16, changed state to administratively down
+  *Sep 12 11:27:40.572: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback17, changed state to down
+  *Sep 12 11:27:40.572: %LINK-5-CHANGED: Interface Loopback17, changed state to administratively down
+  *Sep 12 11:27:40.579: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback18, changed state to down
+  *Sep 12 11:27:40.579: %LINK-5-CHANGED: Interface Loopback18, changed state to administratively down
+  *Sep 12 11:27:40.589: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback19, changed state to down
+  *Sep 12 11:27:40.589: %LINK-5-CHANGED: Interface Loopback19, changed state to administratively down
+  *Sep 12 11:27:40.593: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback20, changed state to down
+  *Sep 12 11:27:40.594: %LINK-5-CHANGED: Interface Loopback20, changed state to administratively down
+  *Sep 13 06:47:40.334: %SYS-6-LOGGINGHOST_STARTSTOP: Logging to host 1.1.1.1 port 514 stopped - CLI initiated
+  *Sep 13 06:47:40.334: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:no logging host 1.1.1.1
+  *Sep 13 06:47:44.144: %SYS-6-LOGGINGHOST_STARTSTOP: Logging to host 2.2.2.2 port 514 stopped - CLI initiated
+  *Sep 13 06:47:44.144: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:no logging host 2.2.2.2
+  *Sep 13 06:47:48.010: %SYS-6-LOGGINGHOST_STARTSTOP: Logging to host 3.3.3.3 port 514 stopped - CLI initiated
+  *Sep 13 06:47:48.011: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:no logging host 3.3.3.3
+  *Sep 13 06:47:52.695: %SYS-6-LOGGINGHOST_STARTSTOP: Logging to host 1.2.3.4 port 514 stopped - CLI initiated
+  *Sep 13 06:47:52.696: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:no logging host 1.2.3.4
+  *Sep 13 06:47:53.757: %SYS-5-CONFIG_I: Configured from console by cisco on vty0 (10.24.132.11)
+  *Sep 13 06:53:11.753: %SYS-6-LOGGINGHOST_STARTSTOP: Logging to host 10.1.1.1 port 0 CLI Request Triggered
+  *Sep 13 06:53:11.753: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:logging host 10.1.1.1
+  *Sep 13 06:53:11.754: %SYS-6-LOGGINGHOST_STARTSTOP: Logging to host 10.1.1.1 port 514 started - CLI initiated
+  *Sep 13 06:53:14.219: %SYS-5-CONFIG_I: Configured from console by cisco on vty1 (10.24.132.11)
+  *Sep 13 06:53:46.695: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:logging host 10.1.1.1
+  *Sep 13 06:53:49.171: %SYS-5-CONFIG_I: Configured from console by cisco on vty1 (10.24.132.11)
+  *Sep 13 11:40:47.538: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback0 
+  *Sep 13 11:40:50.999: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:shutdown 
+  *Sep 13 11:40:52.998: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback0, changed state to down
+  *Sep 13 11:40:52.998: %LINK-5-CHANGED: Interface Loopback0, changed state to administratively down
+  *Sep 13 11:40:53.159: %SYS-5-CONFIG_I: Configured from console by cisco on vty0 (10.24.132.11)
+  *Sep 13 11:42:56.445: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface Loopback0 
+  *Sep 13 11:42:57.289: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:no shutdown 
+  *Sep 13 11:42:57.975: %SYS-5-CONFIG_I: Configured from console by cisco on vty0 (10.24.132.11)
+  *Sep 13 11:42:59.291: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback0, changed state to up
+  *Sep 13 11:42:59.291: %LINK-3-UPDOWN: Interface Loopback0, changed state to up
+  *Sep 13 11:43:59.758: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:interface GigabitEthernet0/1/0 
+  *Sep 13 11:44:00.721: %PARSER-5-CFGLOG_LOGGEDCMD: User:cisco  logged command:shutdown 
+  *Sep 13 11:44:00.726: %BGP-5-NBR_RESET: Neighbor 192.168.1.2 reset (Interface flap)
+  *Sep 13 11:44:00.727: %OSPF-5-ADJCHG: Process 1, Nbr 2.2.2.2 on GigabitEthernet0/1/0 from FULL to DOWN, Neighbor Down: Interface down or detached
+  *Sep 13 11:44:00.727: %BFD-6-BFD_SESS_DESTROYED: BFD-SYSLOG: bfd_session_destroyed,  ld:2049 neigh proc:OSPF, handle:1 act
+  *Sep 13 11:44:00.735: %BGP-5-ADJCHANGE: neighbor 192.168.1.2 Down Interface flap
+  *Sep 13 11:44:00.735: %BGP_SESSION-5-ADJCHANGE: neighbor 192.168.1.2 IPv4 Unicast topology base removed from session  Interface flap
+  *Sep 13 11:44:02.097: %SYS-5-CONFIG_I: Configured from console by cisco on vty0 (10.24.132.11)
+  *Sep 13 11:44:02.719: %LINK-5-CHANGED: Interface GigabitEthernet0/1/0, changed state to administratively down
+- *Sep 13 11:44:03.724: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/1/0, changed state to down
+?                                                                                                              ^^^^
++ *Sep 13 11:44:03.724: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/1/0, changed state to up
+?                                                                                                              ^^
+  asr1#
+  asr1#
